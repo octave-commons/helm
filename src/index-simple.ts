@@ -1,9 +1,7 @@
 // Simple file system watcher for development
-import type { Repo, HubConfig } from "./types.js";
+import type { HubConfig } from "./types.js";
 import { discoverRepos } from "./git.js";
 import { createHub } from "./hub-simple.js";
-import { SimpleAgent } from "./agent/router.js";
-import { NoopPersistence } from "./persistence/indexer.js";
 
 export async function startHub(config: HubConfig): Promise<void> {
   console.log("Starting OpenCode Hub...");

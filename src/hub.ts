@@ -3,7 +3,7 @@ import fastifyHttpProxy from "@fastify/http-proxy";
 import { WebSocketServer } from "ws";
 import { HubConfig, Repo, ChatMessage } from "./types.js";
 
-export function createHubServer(cfg: HubConfig, repos: Map<string, Repo>) {
+export function createHubServer(_cfg: HubConfig, repos: Map<string, Repo>) {
   const app = Fastify({ logger: true });
 
   app.get("/api/repos", async () => Array.from(repos.values()));
@@ -14,7 +14,7 @@ export function createHubServer(cfg: HubConfig, repos: Map<string, Repo>) {
     prefix: "/repo",
     rewritePrefix: "",
     async preHandler(req, reply) {
-      const [_, repoId, ...rest] = req.url.split("/");
+      const [_, repoId, ...rest] = (req.url || "").split("/");
       const r = repos.get(repoId);
       if (!r?.port) return reply.code(404).send({ error: "repo not running" });
       // @ts-ignore
@@ -30,7 +30,7 @@ export function createHubServer(cfg: HubConfig, repos: Map<string, Repo>) {
   });
 
   // Static UI
-  app.register(import("@fastify/static")).then(() => {
+  void app.register(import("@fastify/static")).then(() => {
     // dynamic import of @fastify/static at runtime
   });
   // Workaround dynamic import for ESM

@@ -1,10 +1,10 @@
-import { execa, ExecaChildProcess } from "execa";
+import { execa } from "execa";
 import getPort from "get-port";
 import process from "node:process";
 import { Repo } from "./types.js";
 import { HubConfig } from "./types.js";
 
-type Proc = ExecaChildProcess;
+type Proc = ReturnType<typeof execa>;
 
 export class OpencodeManager {
   private procs = new Map<string, Proc>();
@@ -16,7 +16,7 @@ export class OpencodeManager {
       repo.status = "running";
       return repo;
     }
-    const port = repo.port ?? await getPort({ port: getPort.makeRange(this.cfg.opencodeBasePort, this.cfg.opencodeBasePort + 5000) });
+    const port = repo.port ?? await getPort({ port: this.cfg.opencodeBasePort });
     const args = [...this.cfg.opencodeArgs, String(port), "--root", repo.path];
     repo.port = port;
     repo.status = "starting";
@@ -30,7 +30,7 @@ export class OpencodeManager {
       const s = String(d);
       if (/listening|ready|http server/i.test(s)) repo.status = "running";
     });
-    child.on("exit", (code) => {
+    child.on("exit", () => {
       repo.status = "stopped";
       this.procs.delete(repo.id);
     });

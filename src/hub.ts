@@ -14,8 +14,10 @@ export function createHubServer(_cfg: HubConfig, repos: Map<string, Repo>) {
     prefix: "/repo",
     rewritePrefix: "",
     async preHandler(req, reply) {
-      const [_, repoId, ...rest] = (req.url || "").split("/");
-      const r = repos.get(repoId);
+      const urlParts = req.url?.split("/") || [];
+      const repoId = urlParts[1];
+      const rest = urlParts.slice(2);
+      const r = repoId ? repos.get(repoId) : undefined;
       if (!r?.port) return reply.code(404).send({ error: "repo not running" });
       // @ts-ignore
       this.upstream = `http://127.0.0.1:${r.port}`;
@@ -30,9 +32,7 @@ export function createHubServer(_cfg: HubConfig, repos: Map<string, Repo>) {
   });
 
   // Static UI
-  void app.register(import("@fastify/static")).then(() => {
-    // dynamic import of @fastify/static at runtime
-  });
+  // Dynamic import handled below
   // Workaround dynamic import for ESM
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   (async () => {

@@ -44,7 +44,12 @@ export class OpencodeManager {
 
   stop(repoId: string) {
     const p = this.procs.get(repoId);
-    if (p) p.kill("SIGTERM", { forceKillAfterTimeout: 3000 });
+    if (p) {
+      p.kill("SIGTERM");
+      setTimeout(() => {
+        if (!p.killed) p.kill("SIGKILL");
+      }, 3000);
+    }
     this.procs.delete(repoId);
   }
 
